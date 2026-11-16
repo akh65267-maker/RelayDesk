@@ -28,8 +28,20 @@ export default async function Onboarding({ searchParams }: { searchParams: Promi
           <input name="name" required minLength={2} maxLength={100} />
         </label>
         <label>
-          Workspace URL
-          <input name="slug" required pattern="[a-z0-9](-?[a-z0-9]){2,39}" placeholder="acme" />
+          Workspace ID
+          <input
+            name="slug"
+            required
+            pattern="[a-z0-9](-?[a-z0-9]){2,39}"
+            placeholder="nexa"
+            title="3-40 lowercase letters, digits or single hyphens, e.g. nexa or nexa-support"
+            aria-describedby="slug-hint"
+            autoCapitalize="none"
+            spellCheck={false}
+          />
+          <span id="slug-hint" className={styles.muted}>
+            Lowercase letters, digits and hyphens, like <code>nexa</code>. Not a web address.
+          </span>
         </label>
         {error && <p className={styles.error}>{error}</p>}
         <button className={styles.primary}>Create workspace</button>
