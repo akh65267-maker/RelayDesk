@@ -11,7 +11,7 @@ Each phase ends with something deployed and demoable. The weeks are rough estima
 
 **Done when:** a push to `main` deploys a health endpoint at your domain with traces visible.
 
-## Phase 1: Tenancy and identity (2 weeks)
+## Phase 1: Tenancy and identity (2 weeks) - built, see notes below
 - Keycloak realm as code, Organizations, the `relay-web` and `relay-api` clients.
 - Tenant signup, which creates both the Organization and the tenant row.
 - Agent invites, and the Owner, Admin and Agent roles.
@@ -69,3 +69,8 @@ Each one is a new module subscribing to existing events (ADR 0002), gated by ent
 - Per-tenant SSO (Keycloak identity providers, Business tier)
 - Multi-region data residency (ADR 0003, `region`)
 - AI agent that resolves simple tickets on its own
+
+## Phase 1 notes
+- **Built:** Keycloak realm as code, tenant signup that also creates the Keycloak Organization, invitations, the Owner, Admin and Agent roles, `ITenantContext`, EF query filters, Postgres RLS (with the API connecting as `relay_app`), an append-only audit log, a migration service, and a Next.js shell (login, onboarding, team page, accepting invites).
+- **Tests:** tenant-isolation integration tests at the API level and the raw-SQL level (`tests/RelayDesk.IntegrationTests`). They need Docker and run in CI.
+- **Deferred:** adding Keycloak and the web app to the production Compose file (with the Hetzner deploy), invitation emails, and removing members or changing roles.
