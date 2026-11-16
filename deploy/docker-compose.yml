@@ -1,0 +1,101 @@
+# Production stack (ADR 0010). Runs on the Hetzner VPS from /opt/relaydesk.
+# Secrets come from ./.env (never committed); see .env.example.
+name: relaydesk
+
+x-dotnet: &dotnet
+  restart: unless-stopped
+  environment: &dotnet-env
+    ASPNETCORE_ENVIRONMENT: Production
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    ConnectionStrings__relaydesk: Host=postgres;Database=relaydesk;Username=relay_app;Password=${POSTGRES_APP_PASSWORD}
+    ConnectionStrings__redis: redis:6379
+    ConnectionStrings__rabbitmq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+  depends_on:
+    postgres: { condition: service_healthy }
+    rabbitmq: { condition: service_healthy }
+    redis: { condition: service_started }
+
+services:
+  caddy:
+    image: caddy:2.10
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  api:
+    <<: *dotnet
+    image: ghcr.io/${GHCR_OWNER}/relay-api:${IMAGE_TAG:-latest}
+    environment:
+      <<: *dotnet-env
+      OTEL_SERVICE_NAME: relay-api
+
+  realtime:
+    <<: *dotnet
+    image: ghcr.io/${GHCR_OWNER}/relay-realtime:${IMAGE_TAG:-latest}
+    environment:
+      <<: *dotnet-env
+      OTEL_SERVICE_NAME: relay-realtime
+
+  ai-worker:
+    <<: *dotnet
+    image: ghcr.io/${GHCR_OWNER}/relay-ai-worker:${IMAGE_TAG:-latest}
+    environment:
+      <<: *dotnet-env
+      OTEL_SERVICE_NAME: relay-ai-worker
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: relaydesk
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d relaydesk"]
+      interval: 10s
+      retries: 5
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redis_data:/data]
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    # Management UI bound to localhost only: reach it through an SSH tunnel.
+    ports: ["127.0.0.1:15672:15672"]
+    volumes: [rabbit_data:/var/lib/rabbitmq]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      retries: 5
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.120.0
+    restart: unless-stopped
+    command: ["--config=/etc/otelcol/config.yaml"]
+    environment:
+      GRAFANA_OTLP_ENDPOINT: ${GRAFANA_OTLP_ENDPOINT}
+      GRAFANA_OTLP_AUTH: ${GRAFANA_OTLP_AUTH}
+    volumes:
+      - ./otel-collector.yaml:/etc/otelcol/config.yaml:ro
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pg_data:
+  redis_data:
+  rabbit_data:
