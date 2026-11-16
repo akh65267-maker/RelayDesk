@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\RelayDesk.Api\RelayDesk.Api.csproj" />
     <ProjectReference Include="..\..\src\Modules\RelayDesk.Modules.Tenancy\RelayDesk.Modules.Tenancy.csproj" />
+    <ProjectReference Include="..\..\src\Modules\RelayDesk.Modules.Audit\RelayDesk.Modules.Audit.csproj" />
   </ItemGroup>
 
 </Project>

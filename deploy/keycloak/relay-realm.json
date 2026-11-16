@@ -1,0 +1,69 @@
+{
+  "realm": "relay",
+  "enabled": true,
+  "displayName": "Relay Desk",
+  "organizationsEnabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "verifyEmail": false,
+  "sslRequired": "external",
+  "accessTokenLifespan": 300,
+  "clients": [
+    {
+      "clientId": "relay-web",
+      "name": "Relay Desk web app",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["${RELAY_WEB_URL}/*"],
+      "webOrigins": ["+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${RELAY_WEB_URL}/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "relay-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "relay-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "relay-api",
+      "name": "Relay Desk API",
+      "enabled": true,
+      "bearerOnly": true
+    },
+    {
+      "clientId": "relay-backend",
+      "name": "Relay Desk backend (admin operations)",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${RELAY_BACKEND_SECRET}",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-relay-backend",
+      "enabled": true,
+      "serviceAccountClientId": "relay-backend",
+      "clientRoles": {
+        "realm-management": ["view-users", "manage-users", "manage-realm"]
+      }
+    }
+  ]
+}
