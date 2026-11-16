@@ -45,8 +45,9 @@ internal static partial class TenancyEndpoints
     {
         var tenants = await db.Memberships.IgnoreQueryFilters().AsNoTracking()
             .Where(m => m.UserId == ctx.UserId)
-            .Join(db.Tenants, m => m.TenantId, t => t.Id, (m, t) => new TenantDto(t.Id, t.Name, t.Slug, t.Region, m.Role))
-            .OrderBy(t => t.Name)
+            .Join(db.Tenants, m => m.TenantId, t => t.Id, (m, t) => new { m.Role, Tenant = t })
+            .OrderBy(x => x.Tenant.Name) // sort before projecting: EF can't translate members of a DTO
+            .Select(x => new TenantDto(x.Tenant.Id, x.Tenant.Name, x.Tenant.Slug, x.Tenant.Region, x.Role))
             .ToListAsync(ct);
         return Results.Ok(tenants);
     }
