@@ -9,8 +9,8 @@ internal sealed class KeycloakAdminOptions
 {
     public const string Section = "Keycloak";
 
-    /// <summary>Resolved through Aspire service discovery in development.</summary>
-    public string BaseUrl { get; set; } = "http://keycloak";
+    /// <summary>Resolved through Aspire service discovery: prefers https, falls back to http.</summary>
+    public string BaseUrl { get; set; } = "https+http://keycloak";
     public string Realm { get; set; } = "relay";
     public string BackendClientId { get; set; } = "relay-backend";
     public string BackendClientSecret { get; set; } = "";

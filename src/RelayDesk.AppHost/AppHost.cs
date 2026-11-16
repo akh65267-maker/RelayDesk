@@ -30,7 +30,9 @@ var keycloak = builder.AddKeycloak("keycloak", 8080)
     .WithDataVolume()
     .WithRealmImport("../../deploy/keycloak")
     .WithEnvironment("RELAY_BACKEND_SECRET", kcBackendSecret)
-    .WithEnvironment("RELAY_WEB_URL", webUrl);
+    .WithEnvironment("RELAY_WEB_URL", webUrl)
+    // Raises Keycloak's request header limit; see the file for why (HTTP 431 with localhost cookies).
+    .WithBindMount("../../deploy/keycloak/quarkus.properties", "/opt/keycloak/conf/quarkus.properties", isReadOnly: true);
 
 var migrations = builder.AddProject<Projects.RelayDesk_MigrationService>("migrations")
     .WithReference(db).WaitFor(db); // schema owner
@@ -59,6 +61,8 @@ builder.AddJavaScriptApp("web", "../../web", "dev")
     .WithEnvironment("AUTH_KEYCLOAK_ISSUER", ReferenceExpression.Create($"{keycloak.GetEndpoint("http")}/realms/relay"))
     .WithEnvironment("AUTH_KEYCLOAK_ID", "relay-web")
     .WithEnvironment("AUTH_URL", webUrl)
+    // File watching does not see edits made from Windows on /mnt/d under WSL; poll instead.
+    .WithEnvironment("WATCHPACK_POLLING", "true")
     .WaitFor(api);
 
 builder.Build().Run();

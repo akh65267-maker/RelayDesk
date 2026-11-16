@@ -136,6 +136,12 @@ internal static partial class TenancyEndpoints
         if (await db.Memberships.AnyAsync(m => m.Email == email, ct))
             return Results.Problem("This person is already a member.", statusCode: StatusCodes.Status409Conflict);
 
+        // Re-inviting the same email replaces any pending invitation, so only the newest link works.
+        var now = clock.GetUtcNow();
+        db.Invitations.RemoveRange(await db.Invitations
+            .Where(i => i.Email == email && i.AcceptedAt == null && i.ExpiresAt > now)
+            .ToListAsync(ct));
+
         // The raw token is returned once (email delivery comes later); only its hash is stored.
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
         var invitation = new Invitation
@@ -144,7 +150,7 @@ internal static partial class TenancyEndpoints
             Role = req.Role,
             TokenHash = Hash(token),
             InvitedBy = ctx.UserId!,
-            ExpiresAt = clock.GetUtcNow().Add(InvitationLifetime),
+            ExpiresAt = now.Add(InvitationLifetime),
         };
         db.Invitations.Add(invitation);
         await db.SaveChangesAsync(ct);
