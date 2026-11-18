@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using RelayDesk.Modules.Tenancy.Contracts;
 using RelayDesk.Modules.Tenancy.Persistence;
 using RelayDesk.SharedKernel.Tenancy;
 
@@ -18,4 +17,7 @@ internal sealed class MembershipReader(TenancyDbContext db, ITenantContext tenan
             .FirstOrDefaultAsync(ct);
         return role;
     }
+
+    public Task<bool> IsMemberAsync(string userId, CancellationToken ct) =>
+        db.Memberships.AsNoTracking().AnyAsync(m => m.UserId == userId, ct); // query filter: current tenant
 }

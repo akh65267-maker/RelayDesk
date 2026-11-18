@@ -6,3 +6,5 @@
 .claude/
 docs/
 deploy/.env
+**/bin.linux/
+**/obj.linux/

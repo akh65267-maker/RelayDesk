@@ -8,7 +8,7 @@
 | Backend | .NET 10 (LTS), ASP.NET Core Minimal APIs, EF Core |
 | Database | PostgreSQL 17 with pgvector |
 | Cache, backplane, rate limits | Redis |
-| Messaging | RabbitMQ with MassTransit |
+| Messaging | Wolverine with a PostgreSQL outbox; RabbitMQ for cross-service events (see 0006) |
 | Identity | Keycloak (see 0005) |
 | Frontend | Next.js (App Router, TypeScript) for the agent app; a small framework-free script for the chat widget |
 | Local orchestration | .NET Aspire |

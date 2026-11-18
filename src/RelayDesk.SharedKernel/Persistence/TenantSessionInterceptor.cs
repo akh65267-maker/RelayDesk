@@ -7,18 +7,28 @@ namespace RelayDesk.SharedKernel.Persistence;
 /// <summary>
 /// Copies the tenant context into PostgreSQL session settings every time a connection is opened,
 /// so row-level security policies (ADR 0003) see the caller. Pooled connections are reset by Npgsql on return.
+/// Stateless: the tenant comes from the <see cref="TenantDbContext"/> that opened the connection, so one
+/// instance serves every scope (Wolverine registers DbContext options as a singleton).
 /// </summary>
-public sealed class TenantSessionInterceptor(ITenantContext tenant) : DbConnectionInterceptor
+public sealed class TenantSessionInterceptor : DbConnectionInterceptor
 {
+    public static readonly TenantSessionInterceptor Instance = new();
+
     internal const string Sql =
         "SELECT set_config('app.tenant_id', @t, false), set_config('app.user_id', @u, false), set_config('app.user_email', @e, false)";
 
-    public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData) =>
-        Apply(connection, tenant, transaction: null);
+    private TenantSessionInterceptor() { }
+
+    public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
+    {
+        if (eventData.Context is TenantDbContext db) Apply(connection, db.TenantForSession, transaction: null);
+    }
 
     public override Task ConnectionOpenedAsync(
         DbConnection connection, ConnectionEndEventData eventData, CancellationToken cancellationToken = default) =>
-        ApplyAsync(connection, tenant, transaction: null, cancellationToken);
+        eventData.Context is TenantDbContext db
+            ? ApplyAsync(connection, db.TenantForSession, transaction: null, cancellationToken)
+            : Task.CompletedTask;
 
     internal static void Apply(DbConnection connection, ITenantContext tenant, DbTransaction? transaction)
     {

@@ -36,6 +36,14 @@ public sealed class TenantContext : ITenantContext
         TenantId = tenantId;
         Role = role;
     }
+
+    /// <summary>For message handlers: act inside the event's tenant on behalf of its actor (no role).</summary>
+    public void SetFromEvent(RelayDesk.Contracts.IIntegrationEvent e)
+    {
+        TenantId = e.TenantId;
+        UserId = e.ActorUserId;
+        Role = null;
+    }
 }
 
 /// <summary>Marks an entity as owned by a tenant: gets a query filter, RLS policy and auto-stamped TenantId.</summary>

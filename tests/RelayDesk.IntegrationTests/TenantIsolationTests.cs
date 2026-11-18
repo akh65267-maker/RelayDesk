@@ -141,6 +141,16 @@ public sealed class TenantIsolationTests(RelayApiFactory api)
         var (_, tenantA) = await SignUpAsync("kilo");
         var (_, tenantB) = await SignUpAsync("lima");
 
+        // Audit entries are written asynchronously from events; wait until both tenants have some,
+        // otherwise "tenant A sees none of B's entries" would pass trivially.
+        await using (var owner = new NpgsqlConnection(api.OwnerConnectionString))
+        {
+            await owner.OpenAsync();
+            for (var i = 0; i < 50 && await ScalarAsync(owner,
+                     $"SELECT count(DISTINCT tenant_id) FROM audit.entries WHERE tenant_id IN ('{tenantA.Id}', '{tenantB.Id}')") < 2; i++)
+                await Task.Delay(200);
+        }
+
         await using var conn = await OpenAppConnectionAsync(tenantA.Id);
 
         Assert.Equal(0L, await ScalarAsync(conn, $"SELECT count(*) FROM tenancy.memberships WHERE tenant_id = '{tenantB.Id}'"));

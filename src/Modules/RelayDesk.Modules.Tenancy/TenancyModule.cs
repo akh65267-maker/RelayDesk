@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using RelayDesk.Modules.Tenancy.Application;
-using RelayDesk.Modules.Tenancy.Contracts;
 using RelayDesk.Modules.Tenancy.Keycloak;
 using RelayDesk.Modules.Tenancy.Persistence;
 using RelayDesk.SharedKernel.Modules;
 using RelayDesk.SharedKernel.Persistence;
+using RelayDesk.SharedKernel.Tenancy;
 
 namespace RelayDesk.Modules.Tenancy;
 
@@ -18,19 +19,14 @@ public sealed class TenancyModule : IModule
 
     public void RegisterServices(IServiceCollection services, IConfiguration configuration)
     {
-        var cs = configuration.GetConnectionString("relaydesk")
-            ?? throw new InvalidOperationException("Connection string 'relaydesk' is missing.");
-
-        services.AddDbContext<TenancyDbContext>((sp, o) => o
-            .UseNpgsql(cs, n => n.MigrationsHistoryTable("__ef_migrations", TenancyDbContext.SchemaName))
-            .AddInterceptors(sp.GetRequiredService<TenantSessionInterceptor>()));
+        services.AddModuleDbContext<TenancyDbContext>(configuration, TenancyDbContext.SchemaName);
 
         services.AddScoped<IModuleDatabase, TenancyDatabase>();
         services.AddScoped<ITenantMembershipReader, MembershipReader>();
 
         services.Configure<KeycloakAdminOptions>(configuration.GetSection(KeycloakAdminOptions.Section));
         services.AddHttpClient<IKeycloakAdmin, KeycloakAdminClient>();
-        services.AddSingleton(TimeProvider.System);
+        services.TryAddSingleton(TimeProvider.System);
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => TenancyEndpoints.Map(endpoints);

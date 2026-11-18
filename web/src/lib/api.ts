@@ -7,6 +7,38 @@ export type Role = "Owner" | "Admin" | "Agent";
 export type Tenant = { id: string; name: string; slug: string; region: string; role: Role };
 export type Member = { id: string; userId: string; email: string; role: Role; createdAt: string };
 
+export const TICKET_STATUSES = ["New", "Open", "Pending", "Solved", "Closed"] as const;
+export const TICKET_PRIORITIES = ["Low", "Normal", "High", "Urgent"] as const;
+export type TicketStatus = (typeof TICKET_STATUSES)[number];
+export type TicketPriority = (typeof TICKET_PRIORITIES)[number];
+
+export type TicketSummary = {
+  id: string;
+  number: number;
+  subject: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  assigneeUserId: string | null;
+  requesterEmail: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+export type TicketMessage = {
+  id: string;
+  authorType: "Agent" | "Customer";
+  authorUserId: string | null;
+  body: string;
+  isInternal: boolean;
+  createdAt: string;
+};
+export type TicketDetail = TicketSummary & {
+  requesterName: string | null;
+  createdBy: string;
+  messages: TicketMessage[];
+};
+export type Page<T> = { items: T[]; total: number; page: number; pageSize: number };
+
 export class ApiError extends Error {
   constructor(public status: number, public detail: string) {
     super(detail);

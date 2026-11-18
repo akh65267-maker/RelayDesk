@@ -21,12 +21,17 @@ Each phase ends with something deployed and demoable. The weeks are rough estima
 
 **Done when:** two tenants sign up and provably cannot see each other's data.
 
-## Phase 2: Tickets and messaging backbone (2 weeks)
+## Phase 2: Tickets and messaging backbone (2 weeks) - built
 - Tickets: create, status, assignment, tags, internal notes, search.
-- MassTransit with RabbitMQ, outbox, idempotent consumers, dead-letter queue.
+- Wolverine with a PostgreSQL outbox, durable inbox (idempotent consumers) and dead-letter storage (ADR 0006, revised from MassTransit).
 - Agent inbox UI.
 
 **Done when:** the full ticket lifecycle works and an event is emitted for each change.
+
+**Notes:**
+- **Built:** Tickets module (per-tenant numbering, statuses New/Open/Pending/Solved/Closed, priorities, assignment checked against membership, tags, replies and internal notes, filters and search) with RLS; `RelayDesk.Contracts` with integration events; Tenancy and Tickets publish through the outbox; the Audit module records every event from durable local queues; inbox, new-ticket and ticket pages in the web app.
+- **Tests:** ticket lifecycle, an audit entry for every change, assignment rules, validation and tenant isolation (API and raw SQL).
+- **Moved to Phase 3:** RabbitMQ, which is first needed when the Realtime service consumes events.
 
 ## Phase 3: Real-time chat (2 weeks)
 - Realtime service, SignalR hubs, Redis backplane.

@@ -9,7 +9,8 @@ using Microsoft.Extensions.Logging;
 using RelayDesk.Modules.Tenancy.Domain;
 using RelayDesk.Modules.Tenancy.Keycloak;
 using RelayDesk.Modules.Tenancy.Persistence;
-using RelayDesk.SharedKernel.Auditing;
+using Wolverine.EntityFrameworkCore;
+using RelayDesk.Contracts;
 using RelayDesk.SharedKernel.Tenancy;
 
 namespace RelayDesk.Modules.Tenancy.Application;
@@ -54,7 +55,7 @@ internal static partial class TenancyEndpoints
 
     private static async Task<IResult> CreateTenant(
         CreateTenantRequest req, TenancyDbContext db, TenantContext ctx, IKeycloakAdmin keycloak,
-        IAuditLog audit, ILogger<TenancyModule> log, CancellationToken ct)
+        IDbContextOutbox<TenancyDbContext> outbox, ILogger<TenancyModule> log, TimeProvider clock, CancellationToken ct)
     {
         var name = req.Name?.Trim() ?? "";
         var slug = req.Slug?.Trim().ToLowerInvariant() ?? "";
@@ -75,20 +76,16 @@ internal static partial class TenancyEndpoints
 
             var tenant = new Tenant { Name = name, Slug = slug, KeycloakOrgId = orgId, CreatedBy = ctx.UserId! };
 
-            await db.Database.OpenConnectionAsync(ct);
-            await using var tx = await db.Database.BeginTransactionAsync(ct);
-
-            db.Tenants.Add(tenant);
-            await db.SaveChangesAsync(ct); // allowed by RLS: created_by = app.user_id
-
+            // Enter the new tenant before the connection opens, so RLS allows both inserts
+            // and the outbox commits them together with the events in one transaction.
             ctx.SetTenant(tenant.Id, TenantRole.Owner);
-            await db.RefreshTenantSessionAsync(ct);
-
+            db.Tenants.Add(tenant);
             db.Memberships.Add(new Membership { UserId = ctx.UserId!, Email = ctx.Email ?? "", Role = TenantRole.Owner });
-            await db.SaveChangesAsync(ct);
-            await tx.CommitAsync(ct);
 
-            await audit.WriteAsync("tenant.created", "tenant", tenant.Id.ToString(), new { tenant.Name, tenant.Slug }, ct);
+            var now = clock.GetUtcNow();
+            await outbox.PublishAsync(new TenantCreated(tenant.Id, ctx.UserId, now, tenant.Name, tenant.Slug));
+            await outbox.PublishAsync(new MemberJoined(tenant.Id, ctx.UserId, now, ctx.UserId!, ctx.Email ?? "", nameof(TenantRole.Owner)));
+            await outbox.SaveChangesAndFlushMessagesAsync(ct);
 
             return Results.Created($"/api/tenancy/tenant",
                 new TenantDto(tenant.Id, tenant.Name, tenant.Slug, tenant.Region, TenantRole.Owner));
@@ -124,7 +121,7 @@ internal static partial class TenancyEndpoints
             .ToListAsync(ct));
 
     private static async Task<IResult> Invite(
-        InviteRequest req, TenancyDbContext db, ITenantContext ctx, IAuditLog audit, TimeProvider clock, CancellationToken ct)
+        InviteRequest req, TenancyDbContext db, ITenantContext ctx, IDbContextOutbox<TenancyDbContext> outbox, TimeProvider clock, CancellationToken ct)
     {
         var email = req.Email?.Trim().ToLowerInvariant() ?? "";
         if (!email.Contains('@') || email.Length > 320)
@@ -153,8 +150,8 @@ internal static partial class TenancyEndpoints
             ExpiresAt = now.Add(InvitationLifetime),
         };
         db.Invitations.Add(invitation);
-        await db.SaveChangesAsync(ct);
-        await audit.WriteAsync("invitation.created", "invitation", invitation.Id.ToString(), new { email, role = req.Role.ToString() }, ct);
+        await outbox.PublishAsync(new InvitationCreated(ctx.TenantId!.Value, ctx.UserId, now, invitation.Id, email, req.Role.ToString()));
+        await outbox.SaveChangesAndFlushMessagesAsync(ct);
 
         return Results.Created($"/api/tenancy/invitations/{invitation.Id}",
             new InvitationCreatedDto(invitation.Id, email, req.Role, invitation.ExpiresAt, token));
@@ -162,7 +159,7 @@ internal static partial class TenancyEndpoints
 
     private static async Task<IResult> AcceptInvitation(
         AcceptInvitationRequest req, TenancyDbContext db, TenantContext ctx, IKeycloakAdmin keycloak,
-        IAuditLog audit, TimeProvider clock, CancellationToken ct)
+        IDbContextOutbox<TenancyDbContext> outbox, TimeProvider clock, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(req.Token) || string.IsNullOrEmpty(ctx.Email))
             return Results.NotFound();
@@ -173,10 +170,9 @@ internal static partial class TenancyEndpoints
         if (invitation is null || invitation.Email != ctx.Email || !invitation.IsPending(clock.GetUtcNow()))
             return Results.NotFound();
 
-        await db.Database.OpenConnectionAsync(ct);
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        // From here on act inside the inviting tenant. EF reopens the connection for each
+        // operation, and the session interceptor applies the new tenant context on open.
         ctx.SetTenant(invitation.TenantId, invitation.Role);
-        await db.RefreshTenantSessionAsync(ct);
 
         if (await db.Memberships.AnyAsync(m => m.UserId == ctx.UserId, ct))
             return Results.Problem("You are already a member.", statusCode: StatusCodes.Status409Conflict);
@@ -187,10 +183,9 @@ internal static partial class TenancyEndpoints
 
         db.Memberships.Add(new Membership { UserId = ctx.UserId!, Email = ctx.Email, Role = invitation.Role });
         invitation.AcceptedAt = clock.GetUtcNow();
-        await db.SaveChangesAsync(ct);
-        await tx.CommitAsync(ct);
-
-        await audit.WriteAsync("invitation.accepted", "invitation", invitation.Id.ToString(), null, ct);
+        await outbox.PublishAsync(new MemberJoined(invitation.TenantId, ctx.UserId, invitation.AcceptedAt.Value,
+            ctx.UserId!, ctx.Email, invitation.Role.ToString()));
+        await outbox.SaveChangesAndFlushMessagesAsync(ct);
         return Results.Ok(new { tenantId = invitation.TenantId, role = invitation.Role });
     }
 

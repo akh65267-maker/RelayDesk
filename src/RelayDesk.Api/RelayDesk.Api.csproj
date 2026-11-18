@@ -5,6 +5,7 @@
     <ProjectReference Include="..\RelayDesk.SharedKernel\RelayDesk.SharedKernel.csproj" />
     <ProjectReference Include="..\Modules\RelayDesk.Modules.Tenancy\RelayDesk.Modules.Tenancy.csproj" />
     <ProjectReference Include="..\Modules\RelayDesk.Modules.Audit\RelayDesk.Modules.Audit.csproj" />
+    <ProjectReference Include="..\Modules\RelayDesk.Modules.Tickets\RelayDesk.Modules.Tickets.csproj" />
   </ItemGroup>
 
   <ItemGroup>

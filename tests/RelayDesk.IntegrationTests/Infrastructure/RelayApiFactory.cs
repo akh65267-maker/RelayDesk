@@ -47,8 +47,7 @@ public sealed class RelayApiFactory : WebApplicationFactory<Program>, IAsyncLife
         }
 
         // Same path as the MigrationService: every module, as the schema owner.
-        await using var migrator = new MigratorHost(OwnerConnectionString);
-        await migrator.MigrateAsync();
+        await MigratorHost.MigrateAsync(OwnerConnectionString);
     }
 
     public new async Task DisposeAsync()
