@@ -92,6 +92,10 @@ namespace RelayDesk.Modules.Tickets.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<Guid?>("VisitorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("visitor_id");
+
                     b.HasKey("Id")
                         .HasName("pk_tickets");
 
@@ -106,6 +110,9 @@ namespace RelayDesk.Modules.Tickets.Persistence.Migrations
                     b.HasIndex("TenantId", "Number")
                         .IsUnique()
                         .HasDatabaseName("ix_tickets_tenant_id_number");
+
+                    b.HasIndex("TenantId", "VisitorId")
+                        .HasDatabaseName("ix_tickets_tenant_id_visitor_id");
 
                     b.HasIndex("TenantId", "Status", "UpdatedAt")
                         .HasDatabaseName("ix_tickets_tenant_id_status_updated_at");

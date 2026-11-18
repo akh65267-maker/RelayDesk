@@ -31,3 +31,14 @@ internal sealed class TicketsDatabase(TicketsDbContext db) : IModuleDatabase
 
     public Task MigrateAsync(CancellationToken ct) => db.Database.MigrateAsync(ct);
 }
+
+/// <summary>Public chat-widget API at /api/widget (visitor tokens, conversations).</summary>
+public sealed class WidgetModule : IModule
+{
+    public string Name => "Widget";
+
+    public void RegisterServices(IServiceCollection services, IConfiguration configuration) =>
+        services.TryAddSingleton<RelayDesk.SharedKernel.Widget.VisitorTokens>();
+
+    public void MapEndpoints(IEndpointRouteBuilder endpoints) => WidgetEndpoints.Map(endpoints);
+}

@@ -37,5 +37,6 @@ public sealed record TicketAssigned(Guid TenantId, string? ActorUserId, DateTime
 public sealed record TicketUpdated(Guid TenantId, string? ActorUserId, DateTimeOffset OccurredAt,
     Guid TicketId, string Priority, IReadOnlyList<string> Tags) : IIntegrationEvent;
 
+/// <summary>VisitorId is set when the ticket came from the chat widget, so replies can reach that visitor.</summary>
 public sealed record TicketMessageAdded(Guid TenantId, string? ActorUserId, DateTimeOffset OccurredAt,
-    Guid TicketId, Guid MessageId, bool IsInternal, string AuthorType) : IIntegrationEvent;
+    Guid TicketId, Guid MessageId, bool IsInternal, string AuthorType, Guid? VisitorId = null) : IIntegrationEvent;

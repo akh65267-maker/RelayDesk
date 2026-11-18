@@ -15,6 +15,10 @@ public interface ITenantContext
     TenantRole? Role { get; }
     string? UserId { get; }
     string? Email { get; }
+
+    /// <summary>Set for anonymous chat-widget visitors (no user, no role).</summary>
+    Guid? VisitorId { get; }
+
     bool HasTenant => TenantId is not null;
 }
 
@@ -24,6 +28,16 @@ public sealed class TenantContext : ITenantContext
     public TenantRole? Role { get; private set; }
     public string? UserId { get; private set; }
     public string? Email { get; private set; }
+    public Guid? VisitorId { get; private set; }
+
+    public void SetVisitor(Guid tenantId, Guid visitorId, string? email)
+    {
+        TenantId = tenantId;
+        VisitorId = visitorId;
+        Email = email?.Trim().ToLowerInvariant();
+        UserId = null;
+        Role = null;
+    }
 
     public void SetUser(string userId, string? email)
     {

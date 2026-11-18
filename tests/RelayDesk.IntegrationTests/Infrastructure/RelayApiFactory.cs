@@ -61,6 +61,7 @@ public sealed class RelayApiFactory : WebApplicationFactory<Program>, IAsyncLife
         builder.UseEnvironment("Development");
         builder.UseSetting("ConnectionStrings:relaydesk", AppConnectionString);
         builder.UseSetting("Logging:LogLevel:Default", "Warning");
+        builder.UseSetting("Widget:SigningKey", "integration-tests-widget-signing-key-0123456789");
 
         builder.ConfigureTestServices(services =>
         {

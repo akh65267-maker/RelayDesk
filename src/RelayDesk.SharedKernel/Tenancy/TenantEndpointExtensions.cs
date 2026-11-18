@@ -18,7 +18,8 @@ public static class TenantEndpointExtensions
             var tenant = ctx.HttpContext.RequestServices.GetRequiredService<ITenantContext>();
             if (!tenant.HasTenant)
                 return Results.Problem($"Missing or unknown {TenantHeader} header.", statusCode: StatusCodes.Status400BadRequest);
-            if (tenant.Role < minimum)
+            // A missing role (e.g. a visitor) must fail too: null < minimum would be false.
+            if (tenant.Role is not { } role || role < minimum)
                 return Results.Problem($"Requires {minimum} role.", statusCode: StatusCodes.Status403Forbidden);
             return await next(ctx);
         });
