@@ -65,7 +65,7 @@ export default async function Inbox({
                 <span className={`${styles.badge} ${styles[`priority${t.priority}`] ?? ""}`}>{t.priority}</span>
                 <span className={`${styles.ticketMeta} ${styles.muted}`}>
                   <span>{t.assigneeUserId ? emailOf.get(t.assigneeUserId) ?? "Former member" : "Unassigned"}</span>
-                  <span>{t.requesterEmail}</span>
+                  <span>{t.requesterEmail || "Chat visitor"}</span>
                   <time dateTime={t.updatedAt}>{new Date(t.updatedAt).toLocaleString()}</time>
                 </span>
               </Link>

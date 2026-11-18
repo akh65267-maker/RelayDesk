@@ -8,6 +8,7 @@ import {
   type Member,
   type TicketDetail,
 } from "@/lib/api";
+import { TicketLive, TypingTextarea } from "@/components/live/LiveWorkspace";
 import { SubmitButton } from "@/components/SubmitButton";
 import styles from "../../../../page.module.css";
 
@@ -45,6 +46,7 @@ export default async function TicketPage({
   }
   const members = await api<Member[]>("/api/tenancy/members", { tenantId });
   const emailOf = new Map(members.map((m) => [m.userId, m.email]));
+  const emails = Object.fromEntries(emailOf);
 
   async function send(formData: FormData) {
     "use server";
@@ -73,7 +75,7 @@ export default async function TicketPage({
           <span className={styles.muted}>#{ticket.number}</span> {ticket.subject}
         </h2>
         <p className={styles.muted}>
-          From {ticket.requesterName ? `${ticket.requesterName} <${ticket.requesterEmail}>` : ticket.requesterEmail}
+          From {[ticket.requesterName, ticket.requesterEmail && `<${ticket.requesterEmail}>`].filter(Boolean).join(" ") || "an anonymous chat visitor"}
         </p>
 
         <ol className={styles.thread}>
@@ -82,7 +84,7 @@ export default async function TicketPage({
               <div className={styles.messageMeta}>
                 <strong>
                   {m.authorType === "Customer"
-                    ? ticket.requesterName ?? ticket.requesterEmail
+                    ? ticket.requesterName || ticket.requesterEmail || "Visitor"
                     : emailOf.get(m.authorUserId ?? "") ?? "Former member"}
                 </strong>
                 {m.isInternal && <span className={styles.badge}>Internal note</span>}
@@ -95,10 +97,12 @@ export default async function TicketPage({
           ))}
         </ol>
 
+        <TicketLive ticketId={ticketId} emails={emails} />
+
         <form action={send} className={styles.form}>
           <label>
             Reply
-            <textarea name="body" required rows={4} maxLength={20000} placeholder="Write a reply or an internal note" />
+            <TypingTextarea ticketId={ticketId} name="body" required rows={4} maxLength={20000} placeholder="Write a reply or an internal note" />
           </label>
           <label className={styles.checkbox}>
             <input type="checkbox" name="internal" /> Internal note (only visible to your team)

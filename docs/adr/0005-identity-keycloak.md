@@ -12,7 +12,11 @@
   - Keycloak Organizations don't support per-organization roles, and putting roles in tokens means they stay stale until the token refreshes.
   - Organizations are still kept in sync with tenants, so per-tenant SSO can be added later.
 - **Invitations:** handled by the Tenancy module (hashed single-use tokens, 7-day expiry, email must match). Email delivery comes in a later phase.
-- **Widget users:** anonymous visitors in the chat widget don't use Keycloak. They get a short-lived signed visitor token issued by the API and scoped to one tenant.
+- **Widget users:** anonymous visitors in the chat widget don't use Keycloak. They get a short-lived signed visitor token issued by the API and scoped to one tenant (built in Phase 3):
+  - an HS256 JWT valid for 12 hours, carrying the tenant and a random visitor id, plus the name and email if the visitor gave them;
+  - signed with a key shared by the API and the Realtime service (`Widget:SigningKey`);
+  - validated by its own `Visitor` scheme, which only the widget endpoints and the visitor hub accept. Keycloak stays the default scheme, so a visitor token never reaches agent endpoints, and an agent token never reaches widget endpoints;
+  - the workspace is found by its public ID through a narrow `SECURITY DEFINER` function that returns only the tenant id, because RLS hides tenants.
 - **Future:** per-tenant SSO (SAML or OIDC) through Organization identity providers for the Business tier.
 
 ## Consequences

@@ -24,6 +24,9 @@ internal sealed class Ticket : ITenantOwned
     public string? RequesterName { get; init; }
     public List<string> Tags { get; set; } = [];
     public required string CreatedBy { get; init; }
+
+    /// <summary>Set when the ticket was started from the chat widget by an anonymous visitor.</summary>
+    public Guid? VisitorId { get; init; }
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 

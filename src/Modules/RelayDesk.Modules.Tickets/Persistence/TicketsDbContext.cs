@@ -48,6 +48,7 @@ internal sealed class TicketConfig : IEntityTypeConfiguration<Ticket>
         b.HasIndex(x => new { x.TenantId, x.Number }).IsUnique();
         b.HasIndex(x => new { x.TenantId, x.Status, x.UpdatedAt });
         b.HasIndex(x => new { x.TenantId, x.AssigneeUserId });
+        b.HasIndex(x => new { x.TenantId, x.VisitorId });
         b.HasIndex(x => x.Tags).HasMethod("gin");
         b.HasMany(x => x.Messages).WithOne().HasForeignKey(m => m.TicketId).OnDelete(DeleteBehavior.Cascade);
     }

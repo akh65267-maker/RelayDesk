@@ -33,12 +33,23 @@ Each phase ends with something deployed and demoable. The weeks are rough estima
 - **Tests:** ticket lifecycle, an audit entry for every change, assignment rules, validation and tenant isolation (API and raw SQL).
 - **Moved to Phase 3:** RabbitMQ, which is first needed when the Realtime service consumes events.
 
-## Phase 3: Real-time chat (2 weeks)
+## Phase 3: Real-time chat (2 weeks) - built
 - Realtime service, SignalR hubs, Redis backplane.
 - Embeddable widget script, visitor tokens, conversations that become tickets.
 - Live inbox, presence and typing indicators.
 
 **Done when:** a visitor on a demo page chats live with an agent.
+
+**Notes:**
+- **Built:**
+  - the widget API (visitor sessions and conversations) and visitor tokens;
+  - events published to RabbitMQ (`relay.events`) alongside the local queue for Audit;
+  - the Realtime service: agent and visitor hubs, Redis backplane, presence, typing, and ids-only pushes;
+  - a dependency-free widget script and a demo store at `/demo/<workspace>`;
+  - a live agent inbox and ticket page.
+- **Choices:** a plain-JavaScript widget; a ticket is created on the visitor's first message; visitors are anonymous by default, with optional name and email.
+- **Tests:** 6 widget integration tests (internal notes hidden, own conversations only, reopening, auth schemes, CORS). Checked end to end in the browser: a visitor chat appeared live in the inbox, typing worked both ways, and replies arrived live on both sides.
+- **Follow-ups:** presence expiry after crashes; rate limiting on the anonymous session endpoint; email notifications for offline visitors.
 
 ## Phase 4: Knowledge base and AI (2–3 weeks)
 - Knowledge-base articles (Markdown), chunking, embeddings into pgvector.

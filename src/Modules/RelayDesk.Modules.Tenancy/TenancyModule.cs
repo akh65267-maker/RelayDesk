@@ -23,6 +23,7 @@ public sealed class TenancyModule : IModule
 
         services.AddScoped<IModuleDatabase, TenancyDatabase>();
         services.AddScoped<ITenantMembershipReader, MembershipReader>();
+        services.AddScoped<ITenantDirectory, TenantDirectory>();
 
         services.Configure<KeycloakAdminOptions>(configuration.GetSection(KeycloakAdminOptions.Section));
         services.AddHttpClient<IKeycloakAdmin, KeycloakAdminClient>();

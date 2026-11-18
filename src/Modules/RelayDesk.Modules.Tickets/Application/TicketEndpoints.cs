@@ -218,7 +218,8 @@ internal static class TicketEndpoints
         }
         ticket.UpdatedAt = now;
 
-        await outbox.PublishAsync(new TicketMessageAdded(tenantId, ctx.UserId, now, ticket.Id, message.Id, message.IsInternal, message.AuthorType.ToString()));
+        await outbox.PublishAsync(new TicketMessageAdded(tenantId, ctx.UserId, now, ticket.Id, message.Id, message.IsInternal,
+            message.AuthorType.ToString(), ticket.VisitorId));
         await outbox.SaveChangesAndFlushMessagesAsync(ct);
 
         return Results.Created($"/api/tickets/{ticket.Id}",

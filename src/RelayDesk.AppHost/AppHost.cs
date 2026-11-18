@@ -8,6 +8,8 @@ var kcBackendSecret = builder.AddParameter("keycloak-backend-secret",
 
 var webAuthSecret = builder.AddParameter("web-auth-secret",
     new GenerateParameterDefault { MinLength = 32, Special = false }, secret: true, persist: true);
+var widgetSigningKey = builder.AddParameter("widget-signing-key",
+    new GenerateParameterDefault { MinLength = 48, Special = false }, secret: true, persist: true);
 
 const string webUrl = "http://localhost:3000";
 
@@ -43,10 +45,15 @@ var api = builder.AddProject<Projects.RelayDesk_Api>("api")
     .WithReference(keycloak).WaitFor(keycloak)
     .WithEnvironment("Keycloak__BackendClientSecret", kcBackendSecret)
     .WithEnvironment("Cors__Origins__0", webUrl)
+    .WithEnvironment("Widget__SigningKey", widgetSigningKey)
     .WithReference(rabbit).WaitFor(rabbit)
     .WithReference(redis);
 
-builder.AddProject<Projects.RelayDesk_Realtime>("realtime")
+// Validates agent (Keycloak) and visitor tokens itself, and asks the API to check membership.
+var realtime = builder.AddProject<Projects.RelayDesk_Realtime>("realtime")
+    .WithReference(keycloak).WaitFor(keycloak)
+    .WithReference(api).WaitFor(api)
+    .WithEnvironment("Widget__SigningKey", widgetSigningKey)
     .WithReference(redis).WaitFor(redis)
     .WithReference(rabbit).WaitFor(rabbit);
 
@@ -57,6 +64,9 @@ builder.AddProject<Projects.RelayDesk_AiWorker>("ai-worker")
 builder.AddJavaScriptApp("web", "../../web", "dev")
     .WithHttpEndpoint(port: 3000, env: "PORT")
     .WithEnvironment("RELAY_API_URL", api.GetEndpoint("http"))
+    // URLs the browser uses directly: SignalR for the live inbox, and the widget on the demo page.
+    .WithEnvironment("RELAY_REALTIME_PUBLIC_URL", realtime.GetEndpoint("http"))
+    .WithEnvironment("RELAY_API_PUBLIC_URL", api.GetEndpoint("http"))
     .WithEnvironment("AUTH_SECRET", webAuthSecret)
     .WithEnvironment("AUTH_KEYCLOAK_ISSUER", ReferenceExpression.Create($"{keycloak.GetEndpoint("http")}/realms/relay"))
     .WithEnvironment("AUTH_KEYCLOAK_ID", "relay-web")
