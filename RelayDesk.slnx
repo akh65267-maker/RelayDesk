@@ -3,6 +3,7 @@
     <Project Path="src/RelayDesk.AiWorker/RelayDesk.AiWorker.csproj" />
     <Project Path="src/RelayDesk.Api/RelayDesk.Api.csproj" />
     <Project Path="src/RelayDesk.AppHost/RelayDesk.AppHost.csproj" />
+    <Project Path="src/RelayDesk.Contracts/RelayDesk.Contracts.csproj" />
     <Project Path="src/RelayDesk.MigrationService/RelayDesk.MigrationService.csproj" />
     <Project Path="src/RelayDesk.Realtime/RelayDesk.Realtime.csproj" />
     <Project Path="src/RelayDesk.ServiceDefaults/RelayDesk.ServiceDefaults.csproj" />
@@ -11,6 +12,7 @@
   <Folder Name="/src/Modules/">
     <Project Path="src/Modules/RelayDesk.Modules.Audit/RelayDesk.Modules.Audit.csproj" />
     <Project Path="src/Modules/RelayDesk.Modules.Tenancy/RelayDesk.Modules.Tenancy.csproj" />
+    <Project Path="src/Modules/RelayDesk.Modules.Tickets/RelayDesk.Modules.Tickets.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/RelayDesk.ArchitectureTests/RelayDesk.ArchitectureTests.csproj" />

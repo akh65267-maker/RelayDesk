@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using RelayDesk.Modules.Tenancy.Contracts;
 using RelayDesk.SharedKernel.Tenancy;
 
 namespace RelayDesk.Api;

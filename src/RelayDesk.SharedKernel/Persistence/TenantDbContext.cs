@@ -16,6 +16,8 @@ public abstract class TenantDbContext(DbContextOptions options, ITenantContext t
 
     protected ITenantContext Tenant => tenant;
 
+    internal ITenantContext TenantForSession => tenant;
+
     // Referenced by the query filter; EF parameterizes it per context instance.
     private Guid CurrentTenantId => tenant.TenantId ?? Guid.Empty;
 

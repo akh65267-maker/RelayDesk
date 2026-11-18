@@ -1,6 +1,8 @@
 using RelayDesk.Api;
 using RelayDesk.Modules.Audit;
 using RelayDesk.Modules.Tenancy;
+using RelayDesk.Modules.Tickets;
+using RelayDesk.SharedKernel.Messaging;
 using RelayDesk.SharedKernel.Modules;
 using RelayDesk.SharedKernel.Tenancy;
 
@@ -29,7 +31,11 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
 
 var modules = builder.Services.AddModules(builder.Configuration,
     typeof(TenancyModule).Assembly,
-    typeof(AuditModule).Assembly);
+    typeof(AuditModule).Assembly,
+    typeof(TicketsModule).Assembly);
+
+// Outbox + durable in-process event handling (ADR 0006). Storage is created by the MigrationService.
+builder.AddRelayMessaging(buildStorage: false, typeof(AuditModule).Assembly);
 
 var app = builder.Build();
 

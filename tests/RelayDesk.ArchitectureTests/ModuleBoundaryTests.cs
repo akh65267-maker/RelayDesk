@@ -2,6 +2,7 @@ using System.Reflection;
 using NetArchTest.Rules;
 using RelayDesk.Modules.Audit;
 using RelayDesk.Modules.Tenancy;
+using RelayDesk.Modules.Tickets;
 using RelayDesk.SharedKernel.Modules;
 
 namespace RelayDesk.ArchitectureTests;
@@ -9,7 +10,8 @@ namespace RelayDesk.ArchitectureTests;
 /// <summary>Enforces ADR 0002 module rules. Add each new module assembly to <see cref="Modules"/>.</summary>
 public class ModuleBoundaryTests
 {
-    private static readonly Assembly[] Modules = [typeof(TenancyModule).Assembly, typeof(AuditModule).Assembly];
+    private static readonly Assembly[] Modules =
+        [typeof(TenancyModule).Assembly, typeof(AuditModule).Assembly, typeof(TicketsModule).Assembly];
 
     public static TheoryData<string> ModuleNames() => new(Modules.Select(m => m.GetName().Name!));
 
@@ -47,6 +49,7 @@ public class ModuleBoundaryTests
             .That().ArePublic()
             .And().DoNotResideInNamespaceEndingWith(".Contracts")
             .And().DoNotResideInNamespaceEndingWith(".Migrations") // EF generates these as public
+            .And().DoNotResideInNamespaceEndingWith(".Handlers") // Wolverine's generated code calls these
             .And().DoNotImplementInterface(typeof(IModule))
             .Should().NotBePublic()
             .GetResult();

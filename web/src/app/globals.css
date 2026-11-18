@@ -5,6 +5,10 @@
   --border: #d9d9d9;
   --accent: #2f5bea;
   --danger: #c62828;
+  --warning: #b26a00;
+  --success: #2e7d32;
+  --surface: #f5f6f8;
+  --note: #fff8e1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,6 +19,10 @@
     --border: #333333;
     --accent: #6d8cff;
     --danger: #ff6b6b;
+    --warning: #ffb74d;
+    --success: #81c784;
+    --surface: #16181d;
+    --note: #2a2414;
   }
   html {
     color-scheme: dark;

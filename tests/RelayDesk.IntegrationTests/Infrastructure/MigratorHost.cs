@@ -1,36 +1,34 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using RelayDesk.Modules.Audit;
 using RelayDesk.Modules.Tenancy;
+using RelayDesk.Modules.Tickets;
+using RelayDesk.SharedKernel.Messaging;
 using RelayDesk.SharedKernel.Modules;
 using RelayDesk.SharedKernel.Persistence;
 using RelayDesk.SharedKernel.Tenancy;
 
 namespace RelayDesk.IntegrationTests.Infrastructure;
 
-/// <summary>Mirrors RelayDesk.MigrationService: registers modules with the owner connection and migrates them in order.</summary>
-internal sealed class MigratorHost(string ownerConnectionString) : IAsyncDisposable
+/// <summary>Mirrors RelayDesk.MigrationService: same modules, same Wolverine storage, same migrator.</summary>
+internal static class MigratorHost
 {
-    private readonly ServiceProvider _sp = Build(ownerConnectionString);
-
-    private static ServiceProvider Build(string cs)
+    public static async Task MigrateAsync(string ownerConnectionString)
     {
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:relaydesk"] = cs })
-            .Build();
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddTenancyCore();
-        services.AddModules(config, typeof(TenancyModule).Assembly, typeof(AuditModule).Assembly);
-        return services.BuildServiceProvider();
-    }
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ModuleDbContextExtensions.ConnectionStringName}"] = ownerConnectionString,
+        });
+        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        builder.Services.AddTenancyCore();
+        builder.Services.AddModules(builder.Configuration,
+            typeof(TenancyModule).Assembly, typeof(AuditModule).Assembly, typeof(TicketsModule).Assembly);
+        builder.AddRelayMessaging(buildStorage: true);
 
-    public async Task MigrateAsync()
-    {
-        using var scope = _sp.CreateScope();
-        foreach (var db in scope.ServiceProvider.GetServices<IModuleDatabase>())
-            await db.MigrateAsync(CancellationToken.None);
+        using var host = builder.Build();
+        await RelayDatabaseMigrator.MigrateAsync(host.Services, host.Services.GetRequiredService<ILogger<RelayApiFactory>>());
     }
-
-    public ValueTask DisposeAsync() => _sp.DisposeAsync();
 }

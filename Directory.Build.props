@@ -1,0 +1,16 @@
+<Project>
+  <!--
+    Windows and WSL build the same checkout on D:. Each needs its own restore and build output:
+    NuGet's project.assets.json and generated files contain OS-specific paths, and sharing them
+    causes confusing compile errors when switching. Linux/WSL builds use obj.linux/ and bin.linux/.
+  -->
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <BaseIntermediateOutputPath>$(MSBuildProjectDirectory)/obj.linux/</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildProjectDirectory)/bin.linux/</BaseOutputPath>
+    <!-- Don't compile the Windows build's generated files. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj/**;bin/**</DefaultItemExcludes>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj.linux/**;bin.linux/**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

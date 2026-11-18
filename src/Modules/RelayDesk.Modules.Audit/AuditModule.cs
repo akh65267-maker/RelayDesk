@@ -21,12 +21,7 @@ public sealed class AuditModule : IModule
 
     public void RegisterServices(IServiceCollection services, IConfiguration configuration)
     {
-        var cs = configuration.GetConnectionString("relaydesk")
-            ?? throw new InvalidOperationException("Connection string 'relaydesk' is missing.");
-
-        services.AddDbContext<AuditDbContext>((sp, o) => o
-            .UseNpgsql(cs, n => n.MigrationsHistoryTable("__ef_migrations", AuditDbContext.SchemaName))
-            .AddInterceptors(sp.GetRequiredService<TenantSessionInterceptor>()));
+        services.AddModuleDbContext<AuditDbContext>(configuration, AuditDbContext.SchemaName);
 
         services.AddScoped<IModuleDatabase, AuditDatabase>();
         services.AddScoped<IAuditLog, AuditLog>();
@@ -82,7 +77,8 @@ internal sealed class AuditEntryConfig : IEntityTypeConfiguration<AuditEntry>
 
 internal sealed class AuditLog(AuditDbContext db, ITenantContext tenant) : IAuditLog
 {
-    public async Task WriteAsync(string action, string entityType, string entityId, object? data = null, CancellationToken ct = default)
+    public async Task WriteAsync(string action, string entityType, string entityId, object? data = null,
+        DateTimeOffset? occurredAt = null, CancellationToken ct = default)
     {
         db.Entries.Add(new AuditEntry
         {
@@ -91,6 +87,7 @@ internal sealed class AuditLog(AuditDbContext db, ITenantContext tenant) : IAudi
             EntityType = entityType,
             EntityId = entityId,
             Data = data is null ? null : JsonSerializer.Serialize(data),
+            OccurredAt = occurredAt ?? DateTimeOffset.UtcNow,
         });
         await db.SaveChangesAsync(ct);
     }

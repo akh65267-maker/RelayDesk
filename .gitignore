@@ -480,3 +480,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# WSL/Linux build output (see Directory.Build.props)
+[Bb]in.linux/
+[Oo]bj.linux/
