@@ -65,6 +65,43 @@ public static class MessagingExtensions
     }
 
     /// <summary>
+    /// For workers that change data in response to events (e.g. the AI worker): the same PostgreSQL outbox
+    /// and durable inbox as the API, a durable RabbitMQ queue <paramref name="queue"/> bound to the events
+    /// exchange, and events it publishes go to the exchange only (it has no local event handlers).
+    /// </summary>
+    public static IHostApplicationBuilder AddRelayWorkerMessaging(
+        this IHostApplicationBuilder builder, string queue, int maxParallel, params Assembly[] handlerAssemblies)
+    {
+        var cs = builder.Configuration.GetConnectionString(ModuleDbContextExtensions.ConnectionStringName)
+            ?? throw new InvalidOperationException("Connection string 'relaydesk' is missing.");
+        var rabbit = builder.Configuration.GetConnectionString(RabbitConnectionName)
+            ?? throw new InvalidOperationException($"Connection string '{RabbitConnectionName}' is missing.");
+
+        builder.UseWolverine(opts =>
+        {
+            ApplyCommon(opts, builder, handlerAssemblies);
+            opts.PersistMessagesWithPostgresql(cs, WolverineSchema);
+            opts.UseEntityFrameworkCoreTransactions();
+            opts.AutoBuildMessageStorageOnStartup = AutoCreate.None;
+
+            opts.UseRabbitMq(new Uri(rabbit))
+                .AutoProvision()
+                .DeclareExchange(EventsExchange, exchange => exchange.BindQueue(queue));
+            // Durable inbox: a message survives a crash mid-call and is de-duplicated on redelivery.
+            // Limited parallelism keeps a local model from being flooded.
+            opts.ListenToRabbitQueue(queue).UseDurableInbox().MaximumParallelMessages(maxParallel);
+
+            opts.Publish(rule =>
+            {
+                rule.MessagesImplementing<IIntegrationEvent>();
+                rule.ToRabbitExchange(EventsExchange);
+            });
+        });
+
+        return builder;
+    }
+
+    /// <summary>
     /// For services that only react to events (e.g. Realtime): binds <paramref name="queue"/> to the
     /// events exchange and runs this host's handlers. No database: a missed push is recovered by
     /// clients re-fetching, so the queue doesn't need Wolverine's durable inbox.

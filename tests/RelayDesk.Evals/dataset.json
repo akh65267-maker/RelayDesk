@@ -1,0 +1,33 @@
+{
+  "articles": [
+    { "key": "password", "title": "Resetting your password", "body": "# Forgot your password?\n\nOn the sign-in page choose \"Forgot password\" and enter your account email. We send a reset link that is valid for 60 minutes.\n\nIf the email doesn't arrive within 10 minutes, check your spam folder or ask us to resend it." },
+    { "key": "refunds", "title": "Refund policy", "body": "# Refunds\n\nYou can request a refund within 30 days of purchase. Refunds go back to the original payment method and take 5 to 10 business days to appear.\n\nGift cards and shipping fees are not refundable." },
+    { "key": "shipping", "title": "Shipping times and costs", "body": "# Shipping\n\nOrders ship within 2 business days. Standard delivery in the EU takes 3 to 5 business days and costs 4.90 EUR; it is free above 50 EUR.\n\nExpress delivery (1 to 2 days) costs 12 EUR." },
+    { "key": "returns", "title": "Returning an item", "body": "# Returns\n\nTo return an item, open your order and click \"Start a return\". Print the prepaid label and drop the parcel at any post office within 14 days.\n\nItems must be unused and in their original packaging." },
+    { "key": "2fa", "title": "Two-factor authentication", "body": "# Two-factor authentication (2FA)\n\nTurn on 2FA under Settings > Security. You can use any authenticator app. Save your 10 backup codes somewhere safe: each code works once if you lose your phone." },
+    { "key": "invoices", "title": "Downloading invoices and VAT", "body": "# Invoices\n\nInvoices are in Account > Orders > Invoice (PDF). Prices include VAT at your country's rate. Business customers can add a VAT ID at checkout to get a reverse-charge invoice." }
+  ],
+  "retrieval": [
+    { "question": "I never got the email to reset my password", "expected": "password" },
+    { "question": "How long until my money is back after a refund?", "expected": "refunds" },
+    { "question": "How much does express delivery cost?", "expected": "shipping" },
+    { "question": "Where do I print the return label?", "expected": "returns" },
+    { "question": "I lost my phone and can't log in with my authenticator", "expected": "2fa" },
+    { "question": "Can I get an invoice without VAT for my company?", "expected": "invoices" },
+    { "question": "Is shipping free if I order for 60 euros?", "expected": "shipping" },
+    { "question": "Can I get my gift card refunded?", "expected": "refunds" }
+  ],
+  "replies": [
+    { "subject": "Reset email", "message": "Hi, I clicked forgot password but the email hasn't come for an hour. Call me on +44 7700 900123 if easier.", "expected": "password", "facts": ["spam", "resend"] },
+    { "subject": "Refund timing", "message": "I asked for a refund last week, when will I see the money?", "expected": "refunds", "facts": ["10"] },
+    { "subject": "Express", "message": "How fast is express shipping and what does it cost?", "expected": "shipping", "facts": ["12"] }
+  ],
+  "triage": [
+    { "subject": "Charged twice", "message": "You took my payment twice for the same order! I want my money back now.", "category": "billing" },
+    { "subject": "App crashes", "message": "The app crashes every time I open the settings page since the update.", "category": "technical" },
+    { "subject": "Can't log in", "message": "I can't sign in to my account, it says my password is wrong but I just reset it.", "category": "account" },
+    { "subject": "Where is my parcel", "message": "My order was supposed to arrive on Monday and the tracking hasn't moved for 4 days.", "category": "shipping" },
+    { "subject": "Wrong invoice", "message": "My invoice shows the wrong VAT rate, please correct it.", "category": "billing" },
+    { "subject": "Delete my account", "message": "Please close my account and delete my data.", "category": "account" }
+  ]
+}

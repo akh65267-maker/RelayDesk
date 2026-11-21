@@ -57,9 +57,19 @@ var realtime = builder.AddProject<Projects.RelayDesk_Realtime>("realtime")
     .WithReference(redis).WaitFor(redis)
     .WithReference(rabbit).WaitFor(rabbit);
 
+// Local models (ADR 0008): free, no API key, data stays on this machine. Models are pulled by the
+// AI worker on first start and kept in the volume.
+var ollama = builder.AddContainer("ollama", "ollama/ollama", "0.12.3")
+    .WithVolume("relaydesk-ollama", "/root/.ollama")
+    .WithHttpEndpoint(port: 11434, targetPort: 11434, name: "http");
+
+// Connects as relay_app like the API (RLS applies), never as the schema owner.
 builder.AddProject<Projects.RelayDesk_AiWorker>("ai-worker")
-    .WithReference(db).WaitFor(db)
-    .WithReference(rabbit).WaitFor(rabbit);
+    .WithEnvironment("ConnectionStrings__relaydesk", appConnection)
+    .WaitForCompletion(migrations)
+    .WithReference(rabbit).WaitFor(rabbit)
+    .WithEnvironment("Ai__Endpoint", ollama.GetEndpoint("http"))
+    .WaitFor(ollama);
 
 builder.AddJavaScriptApp("web", "../../web", "dev")
     .WithHttpEndpoint(port: 3000, env: "PORT")

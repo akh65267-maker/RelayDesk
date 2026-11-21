@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using RelayDesk.Api;
 using RelayDesk.Modules.Audit;
+using RelayDesk.Modules.Ai;
+using RelayDesk.Modules.KnowledgeBase;
 using RelayDesk.Modules.Tenancy;
 using RelayDesk.Modules.Tickets;
 using RelayDesk.SharedKernel.Messaging;
@@ -42,7 +44,9 @@ builder.Services.AddCors(o =>
 var modules = builder.Services.AddModules(builder.Configuration,
     typeof(TenancyModule).Assembly,
     typeof(AuditModule).Assembly,
-    typeof(TicketsModule).Assembly);
+    typeof(TicketsModule).Assembly,
+    typeof(KnowledgeBaseModule).Assembly,
+    typeof(AiModule).Assembly);
 
 // Outbox + durable in-process event handling (ADR 0006). Storage is created by the MigrationService.
 builder.AddRelayMessaging(buildStorage: false, typeof(AuditModule).Assembly);

@@ -1,4 +1,6 @@
 using RelayDesk.Modules.Audit;
+using RelayDesk.Modules.Ai;
+using RelayDesk.Modules.KnowledgeBase;
 using RelayDesk.Modules.Tenancy;
 using RelayDesk.Modules.Tickets;
 using RelayDesk.SharedKernel.Messaging;
@@ -14,7 +16,9 @@ builder.Services.AddTenancyCore();
 builder.Services.AddModules(builder.Configuration,
     typeof(TenancyModule).Assembly, // first: other modules may reference tenants later
     typeof(AuditModule).Assembly,
-    typeof(TicketsModule).Assembly);
+    typeof(TicketsModule).Assembly,
+    typeof(KnowledgeBaseModule).Assembly,
+    typeof(AiModule).Assembly);
 builder.AddRelayMessaging(buildStorage: true);
 
 using var host = builder.Build();

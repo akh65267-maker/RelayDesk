@@ -13,5 +13,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RelayDesk.ServiceDefaults\RelayDesk.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Modules\RelayDesk.Modules.KnowledgeBase\RelayDesk.Modules.KnowledgeBase.csproj" />
+    <ProjectReference Include="..\Modules\RelayDesk.Modules.Ai\RelayDesk.Modules.Ai.csproj" />
+    <ProjectReference Include="..\Modules\RelayDesk.Modules.Tickets\RelayDesk.Modules.Tickets.csproj" />
+    <ProjectReference Include="..\RelayDesk.SharedKernel\RelayDesk.SharedKernel.csproj" />
   </ItemGroup>
 </Project>

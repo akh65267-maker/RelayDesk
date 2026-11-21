@@ -12,6 +12,7 @@
 | Identity | Keycloak (see 0005) |
 | Frontend | Next.js (App Router, TypeScript) for the agent app; a small framework-free script for the chat widget |
 | Local orchestration | .NET Aspire |
+| AI | Microsoft.Extensions.AI with local Ollama (llama3.2 3B, nomic-embed-text) by default; see 0008 |
 | Observability | OpenTelemetry sending to Grafana Cloud (free tier) |
 | Tests | xUnit, Testcontainers, NetArchTest, Playwright (end-to-end) |
 | CI/CD | GitHub Actions, GHCR |

@@ -10,12 +10,16 @@
     <Project Path="src/RelayDesk.SharedKernel/RelayDesk.SharedKernel.csproj" />
   </Folder>
   <Folder Name="/src/Modules/">
+    <Project Path="src/Modules/RelayDesk.Modules.Ai/RelayDesk.Modules.Ai.csproj" />
     <Project Path="src/Modules/RelayDesk.Modules.Audit/RelayDesk.Modules.Audit.csproj" />
+    <Project Path="src/Modules/RelayDesk.Modules.KnowledgeBase/RelayDesk.Modules.KnowledgeBase.csproj" />
     <Project Path="src/Modules/RelayDesk.Modules.Tenancy/RelayDesk.Modules.Tenancy.csproj" />
     <Project Path="src/Modules/RelayDesk.Modules.Tickets/RelayDesk.Modules.Tickets.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/RelayDesk.ArchitectureTests/RelayDesk.ArchitectureTests.csproj" />
+    <Project Path="tests/RelayDesk.Evals/RelayDesk.Evals.csproj" />
     <Project Path="tests/RelayDesk.IntegrationTests/RelayDesk.IntegrationTests.csproj" />
+    <Project Path="tests/RelayDesk.UnitTests/RelayDesk.UnitTests.csproj" />
   </Folder>
 </Solution>

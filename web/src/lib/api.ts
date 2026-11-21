@@ -68,3 +68,24 @@ export async function api<T>(path: string, init: RequestInit & { tenantId?: stri
   }
   return (res.status === 204 ? undefined : await res.json()) as T;
 }
+
+export type ArticleStatus = "Draft" | "Published";
+export type ArticleSummary = { id: string; title: string; status: ArticleStatus; updatedAt: string; publishedAt: string | null };
+export type Article = ArticleSummary & { body: string };
+
+export type SuggestionKind = "Triage" | "Reply" | "Summary";
+export type SuggestionStatus = "Pending" | "Ready" | "Failed" | "QuotaExceeded";
+export type Triage = { category: string; priority: TicketPriority; sentiment: string; reason: string };
+export type Source = { n: number; articleId: string; title: string };
+export type Suggestion = {
+  id: string;
+  kind: SuggestionKind;
+  status: SuggestionStatus;
+  content: string | null;
+  data: Triage | Source[] | null;
+  model: string | null;
+  error: string | null;
+  createdAt: string;
+  completedAt: string | null;
+};
+export type AiUsage = { tokensThisMonth: number; monthlyQuota: number; byFeature: { feature: string; tokens: number; calls: number }[] };

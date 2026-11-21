@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RelayDesk.Modules.Audit;
+using RelayDesk.Modules.Ai;
+using RelayDesk.Modules.KnowledgeBase;
 using RelayDesk.Modules.Tenancy;
 using RelayDesk.Modules.Tickets;
 using RelayDesk.SharedKernel.Messaging;
@@ -25,7 +27,8 @@ internal static class MigratorHost
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
         builder.Services.AddTenancyCore();
         builder.Services.AddModules(builder.Configuration,
-            typeof(TenancyModule).Assembly, typeof(AuditModule).Assembly, typeof(TicketsModule).Assembly);
+            typeof(TenancyModule).Assembly, typeof(AuditModule).Assembly, typeof(TicketsModule).Assembly,
+            typeof(KnowledgeBaseModule).Assembly, typeof(AiModule).Assembly);
         builder.AddRelayMessaging(buildStorage: true);
 
         using var host = builder.Build();
