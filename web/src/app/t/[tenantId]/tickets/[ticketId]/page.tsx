@@ -9,6 +9,7 @@ import {
   type TicketDetail,
 } from "@/lib/api";
 import { TicketLive, TypingTextarea } from "@/components/live/LiveWorkspace";
+import { AiPanel } from "./AiPanel";
 import { SubmitButton } from "@/components/SubmitButton";
 import styles from "../../../../page.module.css";
 
@@ -113,6 +114,7 @@ export default async function TicketPage({
       </section>
 
       <aside className={styles.panel}>
+        <AiPanel tenantId={tenantId} ticket={ticket} />
         <form action={update} className={styles.form}>
           <label>
             Status

@@ -1,6 +1,8 @@
 using System.Reflection;
 using NetArchTest.Rules;
 using RelayDesk.Modules.Audit;
+using RelayDesk.Modules.Ai;
+using RelayDesk.Modules.KnowledgeBase;
 using RelayDesk.Modules.Tenancy;
 using RelayDesk.Modules.Tickets;
 using RelayDesk.SharedKernel.Modules;
@@ -11,7 +13,8 @@ namespace RelayDesk.ArchitectureTests;
 public class ModuleBoundaryTests
 {
     private static readonly Assembly[] Modules =
-        [typeof(TenancyModule).Assembly, typeof(AuditModule).Assembly, typeof(TicketsModule).Assembly];
+        [typeof(TenancyModule).Assembly, typeof(AuditModule).Assembly, typeof(TicketsModule).Assembly,
+         typeof(KnowledgeBaseModule).Assembly, typeof(AiModule).Assembly];
 
     public static TheoryData<string> ModuleNames() => new(Modules.Select(m => m.GetName().Name!));
 

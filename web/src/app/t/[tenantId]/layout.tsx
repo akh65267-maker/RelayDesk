@@ -28,6 +28,7 @@ export default async function WorkspaceLayout({
           <OnlineAgents emails={emails} />
           <nav className={styles.nav}>
             <Link href={`/t/${tenantId}/tickets`}>Inbox</Link>
+            <Link href={`/t/${tenantId}/kb`}>Knowledge base</Link>
             <Link href={`/t/${tenantId}/team`}>Team</Link>
             <Link href={`/demo/${tenant.slug}`} target="_blank">
               Demo site

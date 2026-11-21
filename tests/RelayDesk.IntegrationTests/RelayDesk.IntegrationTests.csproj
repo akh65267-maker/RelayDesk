@@ -22,6 +22,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\RelayDesk.Api\RelayDesk.Api.csproj" />
+    <ProjectReference Include="..\..\src\Modules\RelayDesk.Modules.KnowledgeBase\RelayDesk.Modules.KnowledgeBase.csproj" />
+    <ProjectReference Include="..\..\src\Modules\RelayDesk.Modules.Ai\RelayDesk.Modules.Ai.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="RelayDesk.Evals" />
   </ItemGroup>
 
 </Project>

@@ -19,6 +19,7 @@ public sealed class TicketsModule : IModule
     {
         services.AddModuleDbContext<TicketsDbContext>(configuration, TicketsDbContext.SchemaName);
         services.AddScoped<IModuleDatabase, TicketsDatabase>();
+        services.AddScoped<RelayDesk.SharedKernel.Ai.ITicketReader, TicketReader>();
         services.TryAddSingleton(TimeProvider.System);
     }
 

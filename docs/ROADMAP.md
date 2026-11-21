@@ -51,13 +51,28 @@ Each phase ends with something deployed and demoable. The weeks are rough estima
 - **Tests:** 6 widget integration tests (internal notes hidden, own conversations only, reopening, auth schemes, CORS). Checked end to end in the browser: a visitor chat appeared live in the inbox, typing worked both ways, and replies arrived live on both sides.
 - **Follow-ups:** presence expiry after crashes; rate limiting on the anonymous session endpoint; email notifications for offline visitors.
 
-## Phase 4: Knowledge base and AI (2–3 weeks)
+## Phase 4: Knowledge base and AI (2–3 weeks) - built
 - Knowledge-base articles (Markdown), chunking, embeddings into pgvector.
 - AI worker: triage, suggested replies (hybrid RAG), summaries.
 - PII redaction, usage ledger, per-tenant rate limits, fallback when AI is down.
 - Eval dataset and a CI eval job.
 
 **Done when:** an agent gets grounded, cited reply suggestions and token usage is metered.
+
+**Notes:**
+- **Built:**
+  - KnowledgeBase module: articles, chunking, pgvector with HNSW, hybrid search;
+  - AI module: automatic triage, reply drafts with cited sources, summaries, usage ledger and monthly quota;
+  - AI worker with a durable queue and model bootstrapping;
+  - Ollama in the AppHost;
+  - knowledge-base pages and the AI assistant panel on tickets.
+- **Choice:** local Ollama by default (no key, no cost, data stays local), behind `Microsoft.Extensions.AI`.
+- **Tests:**
+  - 16 unit tests (redaction, chunking, triage parsing);
+  - 5 integration tests with a fake model on real Postgres (grounding, redaction, quota, isolation);
+  - 3 evals against the real models: retrieval hit@3 100%, triage 83%, replies 3/3 cited.
+- **Checked in the browser:** a published article was indexed by the worker; a widget chat was triaged automatically in about 9 seconds; a requested draft arrived live with correct facts and linked sources.
+- **Follow-ups:** a suggestion retention job (Phase 6), per-tenant AI opt-out and rate limits (Phase 5).
 
 ## Phase 5: Billing and entitlements (1–2 weeks)
 - Plans in configuration, `IEntitlements`.

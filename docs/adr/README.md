@@ -11,7 +11,7 @@ Product codename: **Relay Desk**, a multi-tenant B2B helpdesk SaaS with real-tim
 | [0005](0005-identity-keycloak.md) | Identity with Keycloak Organizations | Accepted |
 | [0006](0006-messaging-outbox.md) | Messaging with Wolverine and a transactional outbox | Accepted (revised) |
 | [0007](0007-realtime-signalr.md) | Real-time with SignalR and Redis backplane | Accepted |
-| [0008](0008-ai-architecture.md) | AI architecture, PII redaction and metering | Accepted |
+| [0008](0008-ai-architecture.md) | AI architecture, PII redaction and metering | Accepted (refined) |
 | [0009](0009-billing-entitlements.md) | Billing with Stripe and entitlements | Accepted |
 | [0010](0010-hosting-hetzner.md) | Hosting on Hetzner with Docker Compose | Accepted |
 

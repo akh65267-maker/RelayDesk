@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RelayDesk.SharedKernel.Messaging;
@@ -16,14 +17,19 @@ public static class ModuleDbContextExtensions
     /// session interceptor, and Wolverine's envelope tables so it can act as a transactional outbox (ADR 0006).
     /// </summary>
     public static IServiceCollection AddModuleDbContext<TContext>(
-        this IServiceCollection services, IConfiguration configuration, string schema)
+        this IServiceCollection services, IConfiguration configuration, string schema,
+        Action<NpgsqlDbContextOptionsBuilder>? npgsql = null)
         where TContext : DbContext
     {
         var cs = configuration.GetConnectionString(ConnectionStringName)
             ?? throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is missing.");
 
         services.AddDbContextWithWolverineIntegration<TContext>(o => o
-            .UseNpgsql(cs, n => n.MigrationsHistoryTable("__ef_migrations", schema))
+            .UseNpgsql(cs, n =>
+            {
+                n.MigrationsHistoryTable("__ef_migrations", schema);
+                npgsql?.Invoke(n);
+            })
             .AddInterceptors(TenantSessionInterceptor.Instance)
             // The runtime model also contains Wolverine's envelope tables, which are owned by
             // Wolverine's own schema migration, not by the module's EF migrations.

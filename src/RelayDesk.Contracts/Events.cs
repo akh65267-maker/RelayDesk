@@ -40,3 +40,23 @@ public sealed record TicketUpdated(Guid TenantId, string? ActorUserId, DateTimeO
 /// <summary>VisitorId is set when the ticket came from the chat widget, so replies can reach that visitor.</summary>
 public sealed record TicketMessageAdded(Guid TenantId, string? ActorUserId, DateTimeOffset OccurredAt,
     Guid TicketId, Guid MessageId, bool IsInternal, string AuthorType, Guid? VisitorId = null) : IIntegrationEvent;
+
+// ---- Knowledge base ----------------------------------------------------
+
+/// <summary>Published or edited while published: (re)index it for search.</summary>
+public sealed record ArticlePublished(Guid TenantId, string? ActorUserId, DateTimeOffset OccurredAt,
+    Guid ArticleId, string Title) : IIntegrationEvent;
+
+/// <summary>Unpublished or deleted: remove it from search.</summary>
+public sealed record ArticleUnpublished(Guid TenantId, string? ActorUserId, DateTimeOffset OccurredAt,
+    Guid ArticleId) : IIntegrationEvent;
+
+// ---- AI ----------------------------------------------------------------
+
+/// <summary>Kind is "Triage", "Reply" or "Summary".</summary>
+public sealed record AiSuggestionRequested(Guid TenantId, string? ActorUserId, DateTimeOffset OccurredAt,
+    Guid TicketId, Guid SuggestionId, string Kind) : IIntegrationEvent;
+
+/// <summary>Status is "Ready", "Failed" or "QuotaExceeded".</summary>
+public sealed record AiSuggestionReady(Guid TenantId, string? ActorUserId, DateTimeOffset OccurredAt,
+    Guid TicketId, Guid SuggestionId, string Kind, string Status) : IIntegrationEvent;

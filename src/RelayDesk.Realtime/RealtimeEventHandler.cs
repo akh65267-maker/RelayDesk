@@ -18,6 +18,9 @@ public static class RealtimeEventHandler
 
     public static Task Handle(TicketUpdated e, IHubContext<AgentHub> agents) => Agents(agents, e, e.TicketId, "updated");
 
+    /// <summary>A triage, reply draft or summary finished (or failed): agents viewing the ticket refresh.</summary>
+    public static Task Handle(AiSuggestionReady e, IHubContext<AgentHub> agents) => Agents(agents, e, e.TicketId, "ai");
+
     public static async Task Handle(TicketMessageAdded e, IHubContext<AgentHub> agents, IHubContext<VisitorHub> visitors)
     {
         await Agents(agents, e, e.TicketId, "message");
